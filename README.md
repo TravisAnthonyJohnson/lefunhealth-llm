@@ -65,7 +65,7 @@ LefunHealth App
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/lefunhealth-llm
+git clone https://github.com/yourusername/lefunhealth-llm.git
 cd lefunhealth-llm
 ```
 
