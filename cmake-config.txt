@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.18.1)
+project(lefunhealth_llm)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Add GGML library
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/ggml)
+
+# Create the native library
+add_library(
+    lefunhealth_llm
+    SHARED
+    src/main/cpp/model_interface.cpp
+)
+
+# Link against required libraries
+target_link_libraries(
+    lefunhealth_llm
+    ggml
+    android
+    log
+)
+
+# Include directories
+target_include_directories(
+    lefunhealth_llm
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/ggml/include
+)
+
+# Set compiler flags
+target_compile_options(
+    lefunhealth_llm
+    PRIVATE
+    -Wall
+    -Wextra
+    -O3
+)

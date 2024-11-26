@@ -1,0 +1,94 @@
+#include <jni.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include "ggml.h"
+
+struct ModelContext {
+    std::unique_ptr<ggml_context> ctx;
+    // Add other necessary model state
+};
+
+extern "C" {
+
+JNIEXPORT jlong JNICALL
+Java_com_lefunhealth_llm_InferenceEngine_nativeInitialize(
+    JNIEnv* env,
+    jobject thiz,
+    jobject model_buffer) {
+    
+    try {
+        auto* context = new ModelContext();
+        
+        // Get direct buffer address
+        void* buffer = env->GetDirectBufferAddress(model_buffer);
+        jlong capacity = env->GetDirectBufferCapacity(model_buffer);
+        
+        // Initialize GGML context
+        struct ggml_init_params params = {
+            .mem_size   = capacity,
+            .mem_buffer = buffer,
+        };
+        
+        context->ctx.reset(ggml_init(params));
+        if (!context->ctx) {
+            delete context;
+            return 0;
+        }
+        
+        return reinterpret_cast<jlong>(context);
+    } catch (...) {
+        return 0;
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_lefunhealth_llm_InferenceEngine_nativeRunInference(
+    JNIEnv* env,
+    jobject thiz,
+    jlong context_ptr,
+    jstring input,
+    jint max_tokens,
+    jfloat temperature,
+    jint top_k,
+    jfloat top_p) {
+    
+    try {
+        auto* context = reinterpret_cast<ModelContext*>(context_ptr);
+        if (!context || !context->ctx) {
+            return env->NewStringUTF("Error: Invalid context");
+        }
+        
+        const char* input_str = env->GetStringUTFChars(input, nullptr);
+        std::string result;
+        
+        // TODO: Implement actual inference logic here
+        // This is where you would:
+        // 1. Process the input
+        // 2. Run the model
+        // 3. Generate the response
+        
+        env->ReleaseStringUTFChars(input, input_str);
+        return env->NewStringUTF(result.c_str());
+    } catch (...) {
+        return env->NewStringUTF("Error during inference");
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_lefunhealth_llm_InferenceEngine_nativeCleanup(
+    JNIEnv* env,
+    jobject thiz,
+    jlong context_ptr) {
+    
+    try {
+        auto* context = reinterpret_cast<ModelContext*>(context_ptr);
+        if (context) {
+            delete context;
+        }
+    } catch (...) {
+        // Handle cleanup errors
+    }
+}
+
+} // extern "C"
